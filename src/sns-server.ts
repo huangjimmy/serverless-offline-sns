@@ -1,23 +1,25 @@
-import { SQS } from "aws-sdk";
-import { TopicsList, Subscription } from "aws-sdk/clients/sns";
-import fetch from "node-fetch";
-import { URL } from "url";
-import { IDebug, ISNSServer } from "./types";
-import * as bodyParser from "body-parser";
 import * as _ from "lodash";
+import * as bodyParser from "body-parser";
 import * as xml from "xml";
+
+import { IDebug, ISNSServer } from "./types";
+import { Subscription, TopicsList } from "aws-sdk/clients/sns";
 import {
   arrayify,
   createAttr,
+  createMessageId,
   createMetadata,
   createSnsTopicEvent,
-  parseMessageAttributes,
-  parseAttributes,
-  createMessageId,
-  validatePhoneNumber,
-  topicArnFromName,
   formatMessageAttributes,
+  parseAttributes,
+  parseMessageAttributes,
+  topicArnFromName,
+  validatePhoneNumber,
 } from "./helpers";
+
+import { SQS } from "aws-sdk";
+import { URL } from "url";
+import fetch from "node-fetch";
 
 export class SNSServer implements ISNSServer {
   private topics: TopicsList;
@@ -309,18 +311,19 @@ export class SNSServer implements ISNSServer {
         })
         .promise();
     } else {
-      const records = JSON.parse(event).Records ?? [];
-      const messagePromises = records.map((record) => {
-        return sqs
-          .sendMessage({
-            QueueUrl: sub.Endpoint,
-            MessageBody: JSON.stringify(record.Sns),
-            MessageAttributes: formatMessageAttributes(messageAttributes),
-            ...(messageGroupId && { MessageGroupId: messageGroupId }),
-          })
-          .promise();
-      });
-      return Promise.all(messagePromises);
+      const record = {
+        awsRegion: this.region,
+        eventSource: "aws:sqs",
+        body: event,
+      };
+      return sqs
+        .sendMessage({
+          QueueUrl: sub.Endpoint,
+          MessageBody: JSON.stringify({ Records: [record] }),
+          MessageAttributes: formatMessageAttributes(messageAttributes),
+          ...(messageGroupId && { MessageGroupId: messageGroupId }),
+        })
+        .promise();
     }
   }
 

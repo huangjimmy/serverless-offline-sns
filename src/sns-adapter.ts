@@ -1,6 +1,8 @@
 import * as AWS from "aws-sdk";
 import {
-  ListSubscriptionsResponse, ListTopicsResponse, MessageAttributeMap
+  ListSubscriptionsResponse,
+  ListTopicsResponse,
+  MessageAttributeMap,
 } from "aws-sdk/clients/sns.d";
 import * as _ from "lodash";
 import fetch from "node-fetch";
