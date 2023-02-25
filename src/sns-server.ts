@@ -1,23 +1,25 @@
-import { SQS } from "aws-sdk";
-import { TopicsList, Subscription } from "aws-sdk/clients/sns";
-import fetch from "node-fetch";
-import { URL } from "url";
-import { IDebug, ISNSServer } from "./types";
-import * as bodyParser from "body-parser";
 import * as _ from "lodash";
+import * as bodyParser from "body-parser";
 import * as xml from "xml";
+
+import { IDebug, ISNSServer } from "./types";
+import { Subscription, TopicsList } from "aws-sdk/clients/sns";
 import {
   arrayify,
   createAttr,
+  createMessageId,
   createMetadata,
   createSnsTopicEvent,
-  parseMessageAttributes,
-  parseAttributes,
-  createMessageId,
-  validatePhoneNumber,
-  topicArnFromName,
   formatMessageAttributes,
+  parseAttributes,
+  parseMessageAttributes,
+  topicArnFromName,
+  validatePhoneNumber,
 } from "./helpers";
+
+import { SQS } from "aws-sdk";
+import { URL } from "url";
+import fetch from "node-fetch";
 
 export class SNSServer implements ISNSServer {
   private topics: TopicsList;
