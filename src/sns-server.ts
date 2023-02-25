@@ -301,30 +301,14 @@ export class SNSServer implements ISNSServer {
     const sqsEndpoint = `${subEndpointUrl.protocol}//${subEndpointUrl.host}/`;
     const sqs = new SQS({ endpoint: sqsEndpoint, region: this.region });
 
-    if (sub["Attributes"]["RawMessageDelivery"] === "true") {
-      return sqs
-        .sendMessage({
-          QueueUrl: sub.Endpoint,
-          MessageBody: event,
-          MessageAttributes: formatMessageAttributes(messageAttributes),
-          ...(messageGroupId && { MessageGroupId: messageGroupId }),
-        })
-        .promise();
-    } else {
-      const record = {
-        awsRegion: this.region,
-        eventSource: "aws:sqs",
-        body: event,
-      };
-      return sqs
-        .sendMessage({
-          QueueUrl: sub.Endpoint,
-          MessageBody: JSON.stringify({ Records: [record] }),
-          MessageAttributes: formatMessageAttributes(messageAttributes),
-          ...(messageGroupId && { MessageGroupId: messageGroupId }),
-        })
-        .promise();
-    }
+    return sqs
+      .sendMessage({
+        QueueUrl: sub.Endpoint,
+        MessageBody: event,
+        MessageAttributes: formatMessageAttributes(messageAttributes),
+        ...(messageGroupId && { MessageGroupId: messageGroupId }),
+      })
+      .promise();
   }
 
   public publish(
